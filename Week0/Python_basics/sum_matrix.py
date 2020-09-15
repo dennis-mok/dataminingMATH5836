@@ -62,8 +62,6 @@ def numpy_lists():
 
 
 def main(): 
-
- 
     numpy_lists()
   
  
