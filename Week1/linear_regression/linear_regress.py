@@ -36,7 +36,7 @@ def get_data():
     dataset = np.genfromtxt('processed_data/iris_train.csv',delimiter=',')   # when you have .csv  comma sepeated data  in file
     
     
-    print(dataset, ' iris_data')
+    # print(dataset, ' iris_data')
 
 
     # Load the diabetes dataset
@@ -54,6 +54,7 @@ def get_data():
     # Split the data into training/testing sets
 
     return x_train, x_test, y_train, y_test
+
 
 def generate_syntheticdata():
 
