@@ -30,9 +30,17 @@ test = iris_data.drop(train.index)
 
 # Use previous functions to report the mean and standard deviation of the train and test set 
 # and class distribution and also the histograms for each feature. 
+print(train.mean())
+print(train.std())
+train.hist()
+
+print(test.mean())
+print(test.std())
+test.hist()
 
 # Create another subset of the train and test set where only 1 feature selected by the user 
 # makes the dataset with the class. 
+
 
 # Create a subset of the dataset where you consider only instances that feature class 1 or 2, 
 # so that you treat this problem as a binary classification problem later, 
