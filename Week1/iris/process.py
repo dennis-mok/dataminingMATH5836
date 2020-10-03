@@ -42,13 +42,16 @@ test.hist()
 # makes the dataset with the class. 
 
 
-# Create a subset of the dataset where you consider only instances that feature class 1 or 2, 
+# %% Create a subset of the dataset where you consider only instances that feature class 1 or 2, 
 # so that you treat this problem as a binary classification problem later, 
 # i.e save it as binary_iristrain.txt and binary_iristest.txt. 
 # Carry out the stats and visuals in Step 6 for this dataset. 
+iris_12 = iris_data.loc[(iris_data["y"] == 1) | (iris_data["y"] == 2)]
+iris_12.to_csv('iris_12.data', index=False)
 
-# Can you normalise the input features between [0 and 1] ? 
+
+# %% Can you normalise the input features between [0 and 1] ? 
 # Write code that can do so and save normalised versions.
-
-
+iris_norm_12 = iris_12.apply(lambda x: x/x.max(), axis = 0)
+iris_norm_12.to_csv('iris_norm_12.data', index=False)
 # %%
