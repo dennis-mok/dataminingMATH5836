@@ -5,6 +5,7 @@
 from math import exp
 import numpy as np
 import random
+import sys
 
 SIGMOID = 1
 STEP = 2
@@ -14,6 +15,9 @@ LINEAR = 3
 random.seed()
 
 class logistic_regression:
+	"""
+	num_epocs, train_data, test_data, num_features, learn_rate
+	"""
 
 	def __init__(self, num_epocs, train_data, test_data, num_features, learn_rate):
 		self.train_data = train_data
@@ -31,6 +35,7 @@ class logistic_regression:
 		print(self.w, ' self.w init') 
 		print(self.b, ' self.b init') 
 		print(self.out_delta, ' outdel init')
+
 
 	def activation_func(self,z_vec):
 		if self.use_activation == SIGMOID:
@@ -56,6 +61,10 @@ class logistic_regression:
 		return out_delta
 
 	def update(self, x_vec, output, actual):      
+		print(f"{self.w=},{x_vec=},{self.out_delta=}")
+		print(f"{self.w.shape=}")
+		print(f"{x_vec.shape=}")
+		print(f"{self.out_delta.shape=}")
 		self.w+= self.learn_rate * (x_vec *  self.out_delta)
 		self.b+=  (1 * self.learn_rate * self.out_delta)
  
@@ -108,13 +117,13 @@ class logistic_regression:
 
 			while  epoch < self.max_epoch:
 				sum_sqer = 0
-				for _ in range(0, self.num_train): 
+				for s in range(0, self.num_train): 
 
 					if shuffle ==True:
 						i = random.randint(0, self.num_train-1)
 
-					input_instance  =  self.train_data[i,0:self.num_features]  
-					actual  = self.train_data[i,self.num_features:]  
+					input_instance  =  self.train_data.iloc[i,0:self.num_features]  
+					actual  = self.train_data.iloc[i,self.num_features:]  
 					prediction = self.predict(input_instance) 
 					sum_sqer += self.squared_error(prediction, actual)
 					self.out_delta = self.gradient( input_instance, prediction, actual)    # major difference when compared to GD
@@ -139,8 +148,8 @@ class logistic_regression:
 			while  epoch < self.max_epoch:
 				sum_sqer = 0
 				for s in range(0, self.num_train): 
-					input_instance  =  self.train_data[s,0:self.num_features]  
-					actual  = self.train_data[s,self.num_features:]   
+					input_instance  =  self.train_data.iloc[s,0:self.num_features]  
+					actual  = self.train_data.iloc[s,self.num_features:]   
 					prediction = self.predict(input_instance) 
 					sum_sqer += self.squared_error(prediction, actual) 
 					self.out_delta+= self.gradient( input_instance, prediction, actual)    # this is major difference when compared with SGD
