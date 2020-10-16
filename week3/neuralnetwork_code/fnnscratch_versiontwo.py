@@ -76,17 +76,19 @@ class Network:
 
  
 
-
-
 	def BackwardPass(self, input_vec, desired):   
-		out_delta =   (desired - self.out)*(self.out*(1-self.out))  
-		hid_delta = out_delta.dot(self.W2.T) * (self.hidout * (1-self.hidout)) #https://www.tutorialspoint.com/numpy/numpy_dot.htm  https://www.geeksforgeeks.org/numpy-dot-python/
-  
-		self.W2+= self.hidout.T.dot(out_delta) * self.learn_rate
-		self.B2+=  (-1 * self.learn_rate * out_delta)
+		out_delta = (desired - self.out)*(self.out*(1-self.out)) #  g'(Z)
+		hid_delta = out_delta.dot(self.W2.T) * (self.hidout * (1-self.hidout)) #   #https://www.tutorialspoint.com/numpy/numpy_dot.htm  https://www.geeksforgeeks.org/numpy-dot-python/
 
+		dW2 = self.hidout.T.dot(out_delta)
+		db2 = - out_delta
+		self.W2+= self.hidout.T.dot(out_delta) * self.learn_rate
+		self.B2+= db2 * self.learn_rate
+		
+		dW1 = input_vec.T.dot(hid_delta)
+		db1 = - hid_delta
 		self.W1 += (input_vec.T.dot(hid_delta) * self.learn_rate) 
-		self.B1+=  (-1 * self.learn_rate * hid_delta) 
+		self.B1+=  (db1 * self.learn_rate) 
 
 			
  

@@ -16,16 +16,20 @@ LINEAR = 3
 
 class logistic_regression:
 
-	def __init__(self, num_epocs, train_data, test_data, num_features, learn_rate):
-		self.train_data = train_data
-		self.test_data = test_data 
-		self.num_features = num_features
-		self.num_outputs = self.train_data.shape[1] - num_features 
-		self.num_train = self.train_data.shape[0]
+	def __init__(self, num_epocs, X_train, X_test, y_train, y_test, learn_rate):
+		# self.train_data = train_data
+		# self.test_data = test_data 
+		self.X_train = np.array(X_train)
+		self.X_test = np.array(X_test)
+		self.y_train = np.array(y_train)	
+		self.y_test = np.array(y_test)	
+		self.num_features = self.X_train.shape[1]
+		self.num_outputs = self.y_train.shape[1]
+		self.num_train = len(self.X_train)
 
-		# print(num_features, self.num_outputs, '  8888 ')
+		print(self.num_features, self.num_outputs)
 		#self.w = np.random.uniform(-0.5, 0.5, num_features)  # in case one output class
-		self.w = np.random.uniform(-0.5, 0.5, (num_features, self.num_outputs))  
+		self.w = np.random.uniform(-0.5, 0.5, (self.num_features, self.num_outputs))  
 		self.b = np.random.uniform(-0.5, 0.5, self.num_outputs) 
 		self.learn_rate = learn_rate
 		self.max_epoch = num_epocs
@@ -35,7 +39,9 @@ class logistic_regression:
 		print(f"{self.w=}") 
 		print(f"{self.b=}") 
 
-
+	def reset_model(self):
+		self.w = np.random.uniform(-0.5, 0.5, (self.num_features, self.num_outputs))  
+		self.b = np.random.uniform(-0.5, 0.5, self.num_outputs) 
  
 	def activation_func(self,z_vec):
 		if self.use_activation == SIGMOID:
@@ -67,9 +73,9 @@ class logistic_regression:
 	
 	def gradient(self, x_vec, output, actual):   
 		if self.use_activation == SIGMOID :
-			out_delta =   (output - actual)*(output*(1-output)) 
+			out_delta =  -(actual - output)*(output*(1-output)) 
 		else: # for linear and step function  
-			out_delta =   (output - actual) 
+			out_delta =  -(actual - output) 
 		return out_delta
 
 	def update(self, x_vec, output, actual):   # implementation using dot product 
@@ -77,8 +83,8 @@ class logistic_regression:
 		x_vec = np.reshape(x_vec, (-1, 1))  # reshapes 1D array as Nx1D array for numpy dot operation. 
 		out_delta= np.reshape(self.out_delta, (-1, 1))
 
-		self.w+= x_vec.dot(out_delta.T) * self.learn_rate
-		self.b+=  (1 * self.learn_rate * self.out_delta)
+		self.w +=  x_vec.dot(out_delta.T) * self.learn_rate
+		self.b +=  (1 * self.learn_rate * self.out_delta)
 
 	def update_(self, x_vec, output, actual): # implementation using for loops 
 
@@ -94,30 +100,27 @@ class logistic_regression:
 	def squared_error(self, prediction, actual):
 		return  np.sum(np.square(prediction - actual))/prediction.shape[0]# to cater more in one output/class
 
-	def test_model(self, data, tolerance):  
+	def test_model(self, X_data, y_data, tolerance):  
 
-		num_instances = data.shape[0]
+		num_instances = len(y_data)
 
 		class_perf = 0
 		sum_sqer = 0   
 		for s in range(0, num_instances):	
 
-			input_instance  =  self.train_data[s,0:self.num_features] 
-			actual  = self.train_data[s,self.num_features:]  
-			prediction = self.predict(input_instance) 
-			sum_sqer += self.squared_error(prediction, actual)
+			prediction = self.predict(X_data[s]) 
+			sum_sqer += self.squared_error(prediction, y_data)
 
 			pred_binary = np.where(prediction > (1 - tolerance), 1, 0)
 
-			# print(s, actual, prediction, pred_binary, sum_sqer, ' s, actual, prediction, sum_sqerr')
+			# print(s, y_data, prediction, pred_binary, sum_sqer, ' s, y_data, prediction, sum_sqerr')
 
  
 
-			if( (actual==pred_binary).all()):
-				class_perf =  class_perf +1   
+			if( (y_data==pred_binary).all()):
+				class_perf =  class_perf + 1   
 
 		rmse = np.sqrt(sum_sqer/num_instances)
-
 
 		percentage_correct = float(class_perf)/num_instances * 100 
 
@@ -141,8 +144,8 @@ class logistic_regression:
 						i = random.randint(0, self.num_train-1)
 
 
-					input_instance  =  self.train_data[i,0:self.num_features]  
-					actual  = self.train_data[i,self.num_features:]  
+					input_instance  =  self.X_train[i]  # train_data[i,0:self.num_features]  
+					actual  = self.y_train[i]  # self.train_data[i,self.num_features:]  
 					prediction = self.predict(input_instance) 
 					sum_sqer += self.squared_error(prediction, actual)
 					self.out_delta = self.gradient( input_instance, prediction, actual)    # major difference when compared to GD
@@ -153,8 +156,10 @@ class logistic_regression:
 				#print(epoch, sum_sqer, self.w, self.b)
 				epoch=epoch+1  
 
-			rmse_train, train_perc = self.test_model(self.train_data, 0.3) 
-			rmse_test, test_perc = self.test_model(self.test_data, 0.3)
+			rmse_train, train_perc = self.test_model(self.X_train, self.y_train, 0.3) 
+			# rmse_test =0
+			# test_perc =0
+			rmse_test, test_perc = self.test_model(self.X_train, self.y_train, 0.3)
   
 			return (train_perc, test_perc, rmse_train, rmse_test) 
 				
@@ -165,11 +170,11 @@ class logistic_regression:
 			while  epoch < self.max_epoch:
 				sum_sqer = 0
 				for s in range(0, self.num_train): 
-					input_instance  =  self.train_data[s,0:self.num_features]  
-					actual  = self.train_data[s,self.num_features:]   
+					input_instance  =  self.X_train[s] # self.train_data[s,0:self.num_features]  
+					actual  = self.y_train[s]
 					prediction = self.predict_(input_instance) 
 					sum_sqer += self.squared_error(prediction, actual) 
-					self.out_delta+= self.gradient( input_instance, prediction, actual)    # this is major difference when compared with SGD
+					self.out_delta += self.gradient( input_instance, prediction, actual)    # this is major difference when compared with SGD
 
 					#print(input_instance, prediction, actual, s, sum_sqer)
 				self.update(input_instance, prediction, actual)
@@ -178,8 +183,10 @@ class logistic_regression:
 				#print(epoch, sum_sqer, self.w, self.b)
 				epoch=epoch+1  
 
-			rmse_train, train_perc = self.test_model(self.train_data, 0.3) 
-			rmse_test, test_perc = self.test_model(self.test_data, 0.3)
+			rmse_train, train_perc = self.test_model(self.X_train, self.y_train, 0.3) 
+			# rmse_test =0
+			# test_perc =0
+			rmse_test, test_perc = self.test_model(self.X_train, self.y_train, 0.3)
   
 			return (train_perc, test_perc, rmse_train, rmse_test) 
 				
@@ -238,11 +245,11 @@ def main():
 
 	#-------------------------------
 
-	lreg_sgd = logistic_regression(num_epocs, train_data_onehot, test_data_onehot, num_features, learn_rate)
-	(train_perc, test_perc, rmse_train, rmse_test) = lreg_sgd.SGD()
+	# lreg_sgd = logistic_regression(num_epocs, train_data_onehot, test_data_onehot, num_features, learn_rate)
+	# (train_perc, test_perc, rmse_train, rmse_test) = lreg_sgd.SGD()
 
-	lreg_gd = logistic_regression(num_epocs, train_data_onehot, test_data_onehot, num_features, learn_rate)
-	(train_perc, test_perc, rmse_train, rmse_test) = lreg_gd.GD() 
+	# lreg_gd = logistic_regression(num_epocs, train_data_onehot, test_data_onehot, num_features, learn_rate)
+	# (train_perc, test_perc, rmse_train, rmse_test) = lreg_gd.GD() 
 
 	 
 	 
@@ -279,11 +286,11 @@ def main():
 
 	 
 
-	lreg_sgd = logistic_regression(num_epocs, train_data, test_data, num_features, learn_rate)
-	(train_perc, test_perc, rmse_train, rmse_test) = lreg_sgd.SGD()
+	# lreg_sgd = logistic_regression(num_epocs, train_data, test_data, num_features, learn_rate)
+	# (train_perc, test_perc, rmse_train, rmse_test) = lreg_sgd.SGD()
 
-	lreg_gd = logistic_regression(num_epocs, train_data, test_data, num_features, learn_rate)
-	(train_perc, test_perc, rmse_train, rmse_test) = lreg_gd.GD() 
+	# lreg_gd = logistic_regression(num_epocs, train_data, test_data, num_features, learn_rate)
+	# (train_perc, test_perc, rmse_train, rmse_test) = lreg_gd.GD() 
 
 
 if __name__ == "__main__": main()
